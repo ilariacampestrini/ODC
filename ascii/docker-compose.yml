@@ -1,0 +1,15 @@
+services:
+  fuzzer:
+    image: aflplusplus/aflplusplus
+    volumes:
+      - ./challenge:/challenge
+      - ./ascii_gallery.c:/challenge/challenge.c
+      - ./seed:/seed
+      - ./output:/output
+    command: tail -f /dev/null #don't execute fuzzer immediately but later
+
+    # run with: docker compose up --build
+    # to obtain COMPOSERID: docker ps
+    # to log in into container: docker exec -it CONTAINERID /bin/bash
+    # to compile: AFL_USE_ASAN=1 afl-gcc-fast /challenge/challenge.c -o /challenge/challenge
+    # to start fuzzing: afl-fuzz -i /seed/ -o /output/ -- /challenge/challenge

@@ -1,0 +1,85 @@
+import z3
+from pwn import *
+CHALL_PATH = "./prodkey"
+COMMANDS = """
+b 0x80491AE
+c
+"""
+
+if args.GDB: 
+    c = gdb.debug(CHALL_PATH,COMMANDS)
+elif args.REMOTE:
+    c = remote ("prodkey.training.offensivedefensive.it", 8080, ssl = True)
+else: 
+    c = process(CHALL_PATH)
+
+#create symbolic input
+a1 = [z3.BitVec(F"C_{i}",32) for i in range(29)] #each bitvec must have different name
+#bitvec is symbolic with a tag (vector of bit of size 8 bit)
+
+solver = z3.Solver()
+
+for i in range(29):
+    solver.add(a1[i] >= 0x20, a1[i] <= 0x7e)
+
+#ADD CHECK FUNCTIONS
+
+#check1
+solver.add(a1[5] == 45, a1[11] == 45, a1[17] == 45, a1[23] == 45) 
+
+#check2
+solver.add((a1[1] - 48) <= 9,(a1[4] - 48) <= 9, (a1[6] - 48) <= 9, (a1[9] - 48) <= 9, (a1[15] - 48) <= 9, (a1[18] - 48) <= 9, (a1[22] - 48) <= 9, (a1[27] - 48) <= 9, (a1[28] - 48) <= 9)
+
+#check3
+solver.add(a1[4] - 48 == 2 * (a1[1] - 48) + 1, a1[4] - 48 > 7, a1[9] == a1[4] - (a1[1] - 48) + 2)
+
+#check4
+solver.add((a1[27] + a1[28]) % 13 == 8)
+
+#check5
+solver.add((a1[27] + a1[22]) % 22 == 18)
+
+#check6
+solver.add((a1[18] + a1[22]) % 11 == 5)
+
+#chech7
+solver.add((a1[22] + a1[28] + a1[18]) % 26 == 4)
+
+#check8
+solver.add((a1[1] + a1[4] * a1[6]) % 41 == 5)
+
+#check9
+solver.add((a1[15] - a1[28]) % 4 == 1)
+
+#checkA
+solver.add((a1[22] + a1[4]) % 4 == 3)
+
+#checkB
+solver.add(a1[20] == 66, a1[21] == 66)
+
+#checkC
+solver.add((a1[6] + a1[15] * a1[9]) % 10 == 1)
+
+#checkD
+solver.add((a1[15] + a1[4] + a1[27] - 18) % 16 == 8)
+
+#checkE
+#bitvecval is an object interpreted with a concrete value (first parameter) and 32 bits
+v1 = z3.If(a1[28] < a1[9], z3.BitVecVal(1,32), z3.BitVecVal(0,32)) 
+solver.add(((v1 + a1[28] - a1[9]) & 1) - v1 == 1)
+
+#checkF
+solver.add(a1[0] == 77)
+
+check = solver.check()
+print(check)
+
+payload = ""
+for i in range(29):
+    payload += chr(solver.model()[a1[i]].as_long())
+print(payload)
+
+c.recvuntil(b"continue: ")
+c.sendline(encode(payload))
+
+

