@@ -1,1 +1,1 @@
-CTF challenges for the ODC course at POLIMI
+CTF challenges for the Offensive & Defensive Cybersecurity course at POLIMI
